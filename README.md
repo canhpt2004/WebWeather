@@ -53,7 +53,7 @@ Chỉ cần mở file `index.html` bằng trình duyệt, không cần cài đ�
 
 ## License
 
-Dự án phục vụ mục đích học tập và cá nhân. Xem file LICENSE nếu có.
+Dự án phục vụ mục đích học tập và cá nhân.
 
 ---
 
