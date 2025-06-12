@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Weather App</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style-1.css">
+</head>
+
+<body>
+  <img src="./img/logo-1.jpg" class="top-left-decor" alt="decor">
+  <!-- KHU VỰC CHỨA PHONE -->
+  <div class="container">
+    <div id="phone">
+      <div id="topbar">
+        <input id="location-input" placeholder="Location">
+        <button id="search-btn">🔍</button>
+      </div>
+      <div id="icons">
+        <div id="unit-toggle" class="icon-btn" style="text-align: center;">°C/°F</div>
+        <div id="history-btn" class="icon-btn">⏱️</div>
+      </div>
+      <div id="placeholder">
+        <img src="./img/map-icon.png" alt="placeholder">
+        <div><strong>Find out the weather</strong><br>conditions of the location</div>
+      </div>
+      <div id="weather-info">
+        <h2 id="city-name"></h2>
+        <div class="date" id="date"></div>
+        <div class="main">
+          <img id="icon" src="" alt="weather icon">
+          <div class="temp" id="temp"></div>
+        </div>
+        <div class="details">
+          <div><span style="margin-left: 30px;">Humidity</span>
+            <div><span style="font-size: 25px;">💧</span> <span id="humidity"></span></div>
+          </div>
+          <div>
+            <span style="margin-left: 30px;">Wind Speed</span>
+            <div>
+              <span style="font-size: 25px;">💨</span>
+              <!-- Chỉ giữ span cho giá trị gió, xóa “M/s” -->
+              <span id="wind"></span>
+              <!-- Thêm span riêng cho đơn vị -->
+              <span id="wind-unit"></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div id="forecast"></div>
+      <div id="bottombar">
+        <div id="map-btn" class="bar-btn">MAP</div>
+        <div id="current-location-btn" class="bar-btn">📍</div>
+      </div>
+      <div id="reset-btn">⟲</div>
+    </div>
+  </div>
+
+  <!-- HISTORY MODAL -->
+  <div id="history-modal">
+    <div id="history-content">
+      <button id="history-close">✕</button>
+      <h3>Lịch sử tìm kiếm</h3>
+      <ul id="history-list"></ul>
+    </div>
+  </div>
+
+  <!-- MAP OVERLAY -->
+  <div id="map-overlay">
+    <div id="map-container">
+      <button id="map-close">Đóng</button>
+      <div id="map"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const apiKey = 'fcecaccca7264eebc1a188eca336286a';
+    let unit = 'metric';      // 'metric' (°C, m/s) hoặc 'imperial' (°F, mph)
+    let lastCoords = null, lastCity = null;
+
+    // Elements
+    const placeholder = document.getElementById('placeholder');
+    const weatherInfo = document.getElementById('weather-info');
+    const forecastEl = document.getElementById('forecast');
+    const historyBtn = document.getElementById('history-btn');
+    const historyModal = document.getElementById('history-modal');
+    const historyClose = document.getElementById('history-close');
+    const historyList = document.getElementById('history-list');
+    const resetBtn = document.getElementById('reset-btn');
+    const mapBtn = document.getElementById('map-btn');
+    const mapOverlay = document.getElementById('map-overlay');
+    const mapClose = document.getElementById('map-close');
+    const currentBtn = document.getElementById('current-location-btn');
+    const searchBtn = document.getElementById('search-btn');
+    const locInput = document.getElementById('location-input');
+    const unitToggle = document.getElementById('unit-toggle');
+
+    // Hiển thị/ẩn các khu vực
+    function showResults() {
+      placeholder.classList.add('hidden');
+      weatherInfo.classList.add('visible');
+      forecastEl.classList.add('visible');
+    }
+    function resetApp() {
+      placeholder.classList.remove('hidden');
+      weatherInfo.classList.remove('visible');
+      forecastEl.classList.remove('visible');
+      locInput.value = '';
+      lastCoords = lastCity = null;
+    }
+    resetBtn.onclick = resetApp;
+
+    // Lưu lịch sử vào localStorage
+    function saveHistory(city) {
+      const h = JSON.parse(localStorage.getItem('weatherHistory') || '[]');
+      if (!h.includes(city)) {
+        h.push(city);
+        localStorage.setItem('weatherHistory', JSON.stringify(h));
+      }
+    }
+
+    // Hiển thị thông tin thời tiết lên giao diện
+    function render(data, forecastData = null) {
+      showResults();
+
+      // Thành phố + ngày tháng
+      if (data.name == "Xom Pho")
+        data.name = "Hà Nội"
+      if (data.name.includes("GJ")) {
+        data.name = data.name.replaceAll("GJ", "D");
+      }
+      document.getElementById('city-name').textContent = data.name;
+      document.getElementById('date').textContent =
+        new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' });
+
+      // Icon thời tiết
+      document.getElementById('icon').src =
+        `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+
+      // Nhiệt độ
+      document.getElementById('temp').textContent =
+        Math.round(data.main.temp) + (unit === 'metric' ? '°C' : '°F');
+
+      // Độ ẩm
+      document.getElementById('humidity').textContent = data.main.humidity + '%';
+
+      // Vận tốc gió + đơn vị
+      let speed = data.wind.speed;
+      let speedText, unitText;
+      if (unit === 'metric') {
+        // dữ liệu trả về m/s
+        // nếu muốn km/h thì dùng: speed = (speed * 3.6).toFixed(1); unitText = 'km/h';
+        speedText = Math.round(speed);
+        unitText = 'm/s';
+      } else {
+        // dữ liệu trả về mph
+        speedText = speed.toFixed(1);
+        unitText = 'mph';
+      }
+      document.getElementById('wind').textContent = speedText;
+      document.getElementById('wind-unit').textContent = ' ' + unitText;
+
+      // Dự báo 4 ngày kế tiếp
+      forecastEl.innerHTML = '';
+      if (forecastData && forecastData.list) {
+        // Lấy dữ liệu forecast cho 4 ngày tiếp theo (mỗi ngày lấy forecast lúc 12:00)
+        const dailyForecasts = [];
+        const today = new Date().toDateString();
+
+        for (let item of forecastData.list) {
+          const forecastDate = new Date(item.dt * 1000);
+          const forecastDateString = forecastDate.toDateString();
+
+          // Bỏ qua hôm nay và chỉ lấy forecast lúc 12:00 hoặc gần nhất
+          if (forecastDateString !== today && forecastDate.getHours() >= 12 && forecastDate.getHours() <= 15) {
+            if (!dailyForecasts.find(f => f.dateString === forecastDateString)) {
+              dailyForecasts.push({
+                dateString: forecastDateString,
+                date: forecastDate,
+                data: item
+              });
+            }
+          }
+        }
+
+        // Hiển thị 4 ngày đầu tiên
+        for (let i = 0; i < Math.min(4, dailyForecasts.length); i++) {
+          const forecast = dailyForecasts[i];
+          const tempUnit = unit === 'metric' ? '°C' : '°F';
+
+          forecastEl.innerHTML += `
+          <div class="forecast-day">
+            <div>${forecast.date.toLocaleDateString('vi-VN', { weekday: 'short', day: 'numeric' })}</div>
+            <img src="https://openweathermap.org/img/wn/${forecast.data.weather[0].icon}@2x.png">
+            <div>${Math.round(forecast.data.main.temp)}${tempUnit}</div>
+          </div>`;
+        }
+      } else {
+        // Fallback nếu không có dữ liệu forecast
+        for (let i = 1; i <= 4; i++) {
+          const d = new Date();
+          d.setDate(d.getDate() + i);
+          forecastEl.innerHTML += `
+          <div class="forecast-day">
+            <div>${d.toLocaleDateString('vi-VN', { weekday: 'short', day: 'numeric' })}</div>
+            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png">
+            <div>${Math.round(data.main.temp)}°</div>
+          </div>`;
+        }
+      }
+
+      saveHistory(data.name);
+    }
+
+    // Lấy dự báo 5 ngày
+    async function fetchForecast(lat, lon) {
+      try {
+        const res = await fetch(
+          `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}` +
+          `&units=${unit}&appid=${apiKey}&lang=vi`
+        );
+        const data = await res.json();
+        return data.cod === "200" ? data : null;
+      } catch {
+        return null;
+      }
+    }
+
+    // Lấy weather theo tọa độ
+    async function fetchByCoords(lat, lon) {
+      lastCoords = { lat, lon };
+      lastCity = null;
+
+      try {
+        // Lấy thời tiết hiện tại và dự báo song song
+        const [currentRes, forecastData] = await Promise.all([
+          fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}` +
+            `&units=${unit}&appid=${apiKey}&lang=vi`),
+          fetchForecast(lat, lon)
+        ]);
+
+        const currentData = await currentRes.json();
+        if (currentData.cod === 200) {
+          render(currentData, forecastData);
+        } else {
+          alert('Lỗi khi lấy thời tiết');
+        }
+      } catch {
+        alert('Có lỗi kết nối, thử lại sau');
+      }
+    }
+
+    // Chuyển địa chỉ thành tọa độ, ưu tiên Việt Nam
+    async function geocodeAddress(address) {
+      // 1) OpenWeather Geocoding với ",vn"
+      let url = `https://api.openweathermap.org/geo/1.0/direct` +
+        `?q=${encodeURIComponent(address + ',vn')}` +
+        `&limit=1&appid=${apiKey}`;
+      let res = await fetch(url);
+      let arr = await res.json();
+      if (arr.length && arr[0].country === 'VN') {
+        return { lat: arr[0].lat, lon: arr[0].lon, name: arr[0].name };
+      }
+
+      // 2) Fallback Nominatim, giới hạn countrycodes=vn
+      url = `https://nominatim.openstreetmap.org/search` +
+        `?q=${encodeURIComponent(address)}` +
+        `&format=json&limit=1&countrycodes=vn&accept-language=vi`;
+      res = await fetch(url);
+      arr = await res.json();
+      if (arr.length) {
+        const parts = arr[0].display_name.split(',');
+        return {
+          lat: arr[0].lat,
+          lon: arr[0].lon,
+          name: parts.slice(0, 3).join(', ')
+        };
+      }
+
+      // Không tìm thấy
+      return null;
+    }
+
+    // Sự kiện tìm kiếm theo tên
+    searchBtn.onclick = async () => {
+      const addr = locInput.value.trim();
+      if (!addr) {
+        return alert('Nhập địa điểm!');
+      }
+      try {
+        const geo = await geocodeAddress(addr);
+        if (!geo) {
+          return alert('Không tìm thấy vị trí này');
+        }
+        locInput.value = geo.name;
+        await fetchByCoords(geo.lat, geo.lon);
+      } catch {
+        alert('Có lỗi, thử lại sau');
+      }
+    };
+
+    // Đổi đơn vị °C/°F và fetch lại
+    unitToggle.onclick = async () => {
+      unit = unit === 'metric' ? 'imperial' : 'metric';
+      if (lastCoords) {
+        await fetchByCoords(lastCoords.lat, lastCoords.lon);
+      } else if (locInput.value.trim()) {
+        searchBtn.onclick();
+      }
+    };
+
+    // Lịch sử tìm kiếm
+    historyBtn.onclick = () => {
+      historyList.innerHTML = '';
+      const h = JSON.parse(localStorage.getItem('weatherHistory') || '[]');
+      if (h.length) {
+        h.forEach(c => {
+          const li = document.createElement('li');
+          li.textContent = c;
+          li.onclick = () => {
+            locInput.value = c;
+            searchBtn.onclick();
+            historyModal.style.display = 'none';
+          };
+          historyList.appendChild(li);
+        });
+      } else {
+        const li = document.createElement('li');
+        li.textContent = 'Chưa có lịch sử';
+        historyList.appendChild(li);
+      }
+      historyModal.style.display = 'flex';
+    };
+    historyClose.onclick = () => historyModal.style.display = 'none';
+
+    // Vị trí hiện tại bằng Geolocation API
+    currentBtn.onclick = () => {
+      if (!navigator.geolocation) {
+        return alert('Không hỗ trợ GEO');
+      }
+      navigator.geolocation.getCurrentPosition(pos => {
+        locInput.value = '';
+        fetchByCoords(pos.coords.latitude, pos.coords.longitude);
+        historyModal.style.display = 'none';
+      }, () => alert('Không lấy được vị trí'));
+    };
+
+    // Bản đồ tương tác với Leaflet
+    let map;
+    mapBtn.onclick = () => {
+      mapOverlay.style.display = 'flex';
+      if (!map) {
+        map = L.map('map').setView([10.7626, 106.6602], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OSM'
+        }).addTo(map);
+        map.on('click', e => {
+          mapOverlay.style.display = 'none';
+          fetchByCoords(e.latlng.lat, e.latlng.lng);
+        });
+      }
+    };
+    mapClose.onclick = () => mapOverlay.style.display = 'none';
+  </script>
+
+</body>
+
+</html>

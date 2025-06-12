@@ -1,0 +1,205 @@
+    body {
+      /* Thay background trắng bằng background-image */
+      background: url('./img/bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      
+      /* Các thuộc tính cũ để canh giữa #phone */
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+      height: 100vh; 
+      margin: 0;
+    }
+
+
+
+    #phone {
+      background: #1e5481;
+      width: 360px; height: 640px;
+      border-radius: 30px; position: relative;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      overflow: hidden; font-family: sans-serif; color: white;
+    }
+    /* TOP BAR */
+    #topbar { display:flex; align-items:center; padding:12px; gap:8px; }
+    #location-input {
+      flex:1; padding:8px 12px; border:none; border-radius:20px;
+      font-size:16px; background:rgba(255,255,255,0.8); color:#333;
+      max-width:170px;
+    }
+    #search-btn { background:rgba(255,255,255,0.3); border:none;
+      width:40px; height:40px; border-radius:50%; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      margin-left:10px;
+    }
+    #search-btn:hover { background:rgba(255,255,255,0.5); }
+
+    /* ICONS BAR */
+    #icons { position:absolute; top:12px; right:12px; display:flex; gap:8px; }
+    .icon-btn { width:36px; height:36px; background:rgba(255,255,255,0.3);
+      border-radius:8px; display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+    }
+    .icon-btn:hover { background:rgba(255,255,255,0.5); }
+
+    /* PLACEHOLDER */
+    #placeholder { position:absolute; top:100px; bottom:100px;
+      left:0; right:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; text-align:center;
+      padding:0 20px; transition:opacity .3s;
+    }
+    #placeholder.hidden { opacity:0; pointer-events:none; }
+    #placeholder img { width:200px; margin-bottom:20px; }
+
+    /* WEATHER INFO */
+    #weather-info { position:absolute; top:80px; left:0; right:0;
+      padding:0 20px; opacity:0; transition:opacity .3s;
+    }
+    #weather-info.visible { opacity:1; }
+    #weather-info h2 { margin:0; font-size:24px; text-align:center; }
+    #weather-info .date { text-align:center; margin:8px 0;
+      font-size:14px; opacity:.9;
+    }
+    #weather-info .main { display:flex; align-items:center;
+      justify-content:center; gap:16px; margin:12px 0;
+    }
+    #weather-info .main img { width:80px; }
+    #weather-info .main .temp { font-size:32px; }
+    #weather-info .details { display:flex;
+      justify-content:space-around; font-size:14px;
+      opacity:.9; margin-bottom:16px;
+    }
+
+    /* FORECAST */
+    #forecast { position:absolute; bottom:80px; left:0; right:0;
+      display:flex; justify-content:center; gap:8px;
+      padding:0 10px; opacity:0; transition:opacity .3s;
+    }
+    #forecast.visible { opacity:1; }
+    .forecast-day { background:rgba(255,255,255,0.2);
+      border-radius:12px; padding:8px;
+      text-align:center; width:60px; font-size:12px;
+    }
+    .forecast-day img { width:32px; }
+
+    /* BOTTOM BAR LEFT */
+    #bottombar { position:absolute; bottom:12px; left:12px;
+      display:flex; gap:8px;
+    }
+    .bar-btn { background:rgba(255,255,255,0.3);
+      border-radius:20px; padding:6px 12px; cursor:pointer;
+      font-size:14px;
+    }
+    .bar-btn:hover { background:rgba(255,255,255,0.5); }
+
+    /* RESET BUTTON BOTTOM RIGHT */
+    #reset-btn { position:absolute; bottom:12px; right:12px;
+      width:36px; height:36px; background:rgba(255,255,255,0.3);
+      border-radius:8px; display:flex; align-items:center;
+      justify-content:center; cursor:pointer;
+    }
+    #reset-btn:hover { background:rgba(255,255,255,0.5); }
+
+    /* HISTORY MODAL */
+    #history-modal { position:fixed; top:0; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,0.5);
+      display:none; justify-content:center; align-items:center;
+      z-index:2000;
+    }
+    #history-content { background:white; color:#333;
+      width:80%; max-width:300px; max-height:70%; overflow-y:auto;
+      border-radius:8px; padding:1rem; position:relative;
+    }
+    #history-content h3 { margin-top:0; text-align:center; }
+    #history-list { list-style:none; padding:0; margin:0; }
+    #history-list li { padding:6px 0; border-bottom:1px solid #ddd;
+      cursor:pointer;
+    }
+    #history-list li:hover { background:#f0f0f0; }
+    #history-close { position:absolute; top:8px; right:8px;
+      border:none; background:transparent; font-size:18px;
+      cursor:pointer;
+    }
+
+    /* MAP OVERLAY */
+    #map-overlay { position:fixed; top:0; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,0.5); display:none;
+      justify-content:center; align-items:center; z-index:1000;
+    }
+    #map-container { width:90%; height:60%; background:white;
+      border-radius:12px; overflow:hidden; position:relative;
+    }
+    #map-container #map { width:100%; height:100%; }
+    #map-close { position:absolute; top:8px; right:8px;
+      background:white; border:none; border-radius:4px;
+      padding:4px 8px; cursor:pointer;
+    }
+    .top-left-decor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 120px;  /* bạn chỉnh tùy ý */
+        height: auto;
+        z-index: 1000;
+        pointer-events: none; /* không ảnh hưởng đến thao tác chuột */
+        }
+
+    /* body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: -1;
+    } */
+
+    /* HEADER OUTSIDE PHONE */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+      z-index: 100;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    /* FOOTER OUTSIDE PHONE */
+    footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 40px;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      backdrop-filter: blur(6px);
+      z-index: 100;
+    }
+
+    /* CONTAINER PHONE */
+    .container {
+      flex: 1; /* chiếm giữa hai cột header/footer */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 0 40px; /* tạo khoảng trống cho header & footer */
+    }
+
+    /* #phone {
+      width: 360px;
+      height: 640px;
+      background: rgba(30,84,129,0.8);
+      border-radius: 30px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    } */

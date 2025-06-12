@@ -1,0 +1,46 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Arial', sans-serif; background: #fff; }
+.hidden { display: none; }
+.app-container {
+  width: 360px; height: 640px;
+  margin: 20px auto; background: #286096;
+  border-radius: 20px; position: relative;
+  overflow: hidden; color: #fff;
+}
+header { position: absolute; top: 10px; right: 10px; display: flex; gap: 10px; }
+.icon-btn { background: rgba(0,0,0,0.3); border: none; padding: 8px; border-radius: 6px; cursor: pointer; color: #fff; }
+.search-bar {
+  display: flex; margin: 20px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 25px;
+}
+#location-input { flex: 1; border: none; padding: 10px 15px; border-radius: 25px 0 0 25px; font-size: 16px; }
+#search-btn { border: none; background: transparent; padding: 10px 15px; cursor: pointer; font-size: 18px; }
+.history-list {
+  position: absolute; top: 70px; right: 20px;
+  background: rgba(255,255,255,0.9); color: #000;
+  border-radius: 8px; max-height: 200px; overflow-y: auto;
+}
+.history-list div { padding: 8px 12px; cursor: pointer; }
+.history-list div:hover { background: #ececec; }
+.map-btn, .locate-btn {
+  position: absolute; bottom: 20px; border: none;
+  padding: 8px 16px; border-radius: 20px;
+  background: rgba(255,255,255,0.8); color: #000; cursor: pointer; font-weight: bold;
+}
+.map-btn { left: 20px; }
+.locate-btn { right: 20px; }
+.weather-card { width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
+.overlay { position: absolute; width: 100%; height: 100%; background-size: cover; filter: blur(8px) brightness(0.7); }
+.weather-content { position: relative; padding: 20px; text-align: center; }
+.intro { color: #fff; }
+.intro-img { width: 100px; margin-bottom: 10px; }
+.location-date span { display: block; }
+.current-weather { display: flex; align-items: center; justify-content: center; margin: 10px 0; }
+.current-weather img { width: 60px; }
+.temp-desc { margin-left: 10px; text-align: left; }
+.temp-desc #temp { font-size: 32px; font-weight: bold; }
+.details { display: flex; justify-content: space-around; margin: 10px 0; }
+.forecast { display: flex; justify-content: space-between; margin-top: 15px; }
+.forecast .day { flex: 1; margin: 0 5px; background: rgba(255,255,255,0.3); padding: 8px; border-radius: 10px; }
+.reset-btn { position: absolute; bottom: 20px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #fff; }
