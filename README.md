@@ -48,8 +48,8 @@ Chỉ cần mở file `index.html` bằng trình duyệt, không cần cài đ�
 ## Ảnh minh họa
 
 ![screenshot](https://openweathermap.org/themes/openweathermap/assets/img/logo_white_cropped.png)
+![image](https://github.com/user-attachments/assets/f3eaae22-1e91-4589-9840-ca01a55c6717)
 
-*(Bạn có thể thay bằng ảnh giao diện thật nếu có.)*
 
 ## License
 
